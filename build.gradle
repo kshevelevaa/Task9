@@ -1,0 +1,47 @@
+plugins {
+    id 'java'
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+}
+
+test {
+    useJUnitPlatform()
+}
+jar {
+    manifest{
+        attributes('Main-class':'Main')
+    }
+}
+task copyJarfile(type: Copy)
+{
+    dependsOn 'jar'
+    from file("$buildDir/libs/Task9-1.0-SNAPSHOT.jar")
+    into file("$rootDir/src/main/resources/")
+}
+task removeJarfile(type: Delete)
+{
+    dependsOn 'copyJarfile'
+    delete file("$buildDir/libs/Task9-1.0-SNAPSHOT.jar")
+}
+
+task create(type: Exec)
+{
+    dependsOn 'removeJarfile'
+    commandLine 'docker' , 'build' , '-t' , 'Task9-1.0' , './src/main/resources/'
+}
+
+task runDocker(type: Exec)
+{
+    dependsOn 'create'
+    commandLine 'docker', 'run', 'Task9-1.0'
+}
